@@ -29,7 +29,7 @@ fun SettingsRoute(
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
     val notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
-    var currentPage by remember { mutableStateOf(SettingsPage.Main) }
+    var currentPage by remember { mutableStateOf<SettingsPage>(SettingsPage.Main) }
 
     val exportLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
