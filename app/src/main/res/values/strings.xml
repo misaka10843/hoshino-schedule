@@ -5,6 +5,7 @@
     <!-- Common -->
     <string name="common_confirm">Confirm</string>
     <string name="common_cancel">Cancel</string>
+    <string name="common_back">Back</string>
 
     <!-- Schedule -->
     <string name="schedule_settings_content_description">Open settings</string>
@@ -103,6 +104,14 @@
     <string name="settings_export_failure">Export failed</string>
     <string name="settings_import_success">Imported successfully</string>
     <string name="settings_import_failure">Import failed</string>
+    <string name="settings_exporting">Exporting…</string>
+    <string name="settings_importing">Importing…</string>
+    <string name="settings_transfer_export_progress">Writing backup…</string>
+    <string name="settings_transfer_import_progress">Restoring data…</string>
+    <string name="settings_search_hint">Search settings</string>
+    <string name="settings_search_clear">Clear search</string>
+    <string name="settings_search_no_results">No settings matched your search.</string>
+    <string name="settings_select_category">Select a section to start editing.</string>
 
     <!-- Course editor -->
     <string name="course_editor_new_title">New course</string>
