@@ -5,19 +5,24 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cafe.adriel.voyager.navigator.Navigator
 import com.misaka.hoshinoschedule.R
 import com.misaka.hoshinoschedule.data.settings.UserPreferences
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 
 @Composable
 fun SettingsRoute(
@@ -29,12 +34,14 @@ fun SettingsRoute(
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
     val notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
-    var currentPage by remember { mutableStateOf<SettingsPage>(SettingsPage.Main) }
+    var transferState by remember { mutableStateOf(SettingsTransferState()) }
 
     val exportLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
             if (uri != null) {
+                transferState = transferState.copy(isExporting = true)
                 viewModel.export(uri) { success ->
+                    transferState = transferState.copy(isExporting = false)
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             context.getString(if (success) R.string.settings_export_success else R.string.settings_export_failure)
@@ -47,7 +54,9 @@ fun SettingsRoute(
     val importLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             if (uri != null) {
+                transferState = transferState.copy(isImporting = true)
                 viewModel.import(uri) { success ->
+                    transferState = transferState.copy(isImporting = false)
                     scope.launch {
                         snackbarHostState.showSnackbar(
                             context.getString(if (success) R.string.settings_import_success else R.string.settings_import_failure)
@@ -62,20 +71,7 @@ fun SettingsRoute(
             uri?.let { viewModel.setBackgroundImage(it.toString()) }
         }
 
-    val handleBack = {
-        if (currentPage != SettingsPage.Main) {
-            currentPage = SettingsPage.Main
-        } else {
-            onBack()
-        }
-    }
-
-    SettingsScreen(
-        state = uiState,
-        page = currentPage,
-        snackbarHostState = snackbarHostState,
-        onNavigate = { currentPage = it },
-        onBack = handleBack,
+    val callbacks = SettingsCallbacks(
         onTimetableNameChange = viewModel::setTimetableName,
         onBackgroundColorSelected = viewModel::setBackgroundColor,
         onBackgroundImageSelect = { imagePicker.launch("image/*") },
@@ -120,7 +116,6 @@ fun SettingsRoute(
                 snackbarHostState.showSnackbar(context.getString(R.string.settings_developer_test_dnd_consecutive_scheduled))
             }
         },
-        notificationsEnabled = notificationsEnabled,
         onOpenNotificationSettings = {
             val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                 putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
@@ -133,4 +128,25 @@ fun SettingsRoute(
             }
         }
     )
+
+    Navigator(SettingsHomeScreen) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        ) { paddingValues ->
+            CompositionLocalProvider(
+                LocalSettingsScreenContext provides SettingsScreenContext(
+                    state = uiState,
+                    callbacks = callbacks,
+                    snackbarHostState = snackbarHostState,
+                    transferState = transferState,
+                    notificationsEnabled = notificationsEnabled,
+                    contentPadding = paddingValues,
+                    closeSettings = onBack
+                ),
+                LocalSettingsDetailMode provides SettingsDetailMode.SINGLE_PANE
+            ) {
+                cafe.adriel.voyager.navigator.CurrentScreen()
+            }
+        }
+    }
 }
