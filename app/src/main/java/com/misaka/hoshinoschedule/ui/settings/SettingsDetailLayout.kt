@@ -10,7 +10,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,7 +21,7 @@ import com.misaka.hoshinoschedule.R
 fun SettingsDetailScaffold(
     titleRes: Int,
     contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-    content: @Composable Column.() -> Unit
+    content: @Composable () -> Unit
 ) {
     val ctx = LocalSettingsScreenContext.current
     val detailMode = LocalSettingsDetailMode.current
@@ -48,20 +47,20 @@ fun SettingsDetailScaffold(
                     .fillMaxSize()
                     .padding(ctx.contentPadding)
                     .padding(innerPadding)
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                content = content
-            )
+                    .padding(contentPadding),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                content()
+            }
         }
     } else {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-            content = content
-        )
+                .padding(contentPadding),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            content()
+        }
     }
 }
