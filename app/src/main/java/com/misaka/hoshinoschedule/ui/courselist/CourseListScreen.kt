@@ -1,16 +1,7 @@
-package com.misaka.hoshinoschedule.ui.courselist
+﻿package com.misaka.hoshinoschedule.ui.courselist
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -36,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,8 +61,6 @@ private fun CourseListScreen(
     onAddCourse: () -> Unit,
     onCourseSelected: (Long) -> Unit
 ) {
-    val listState = rememberLazyListState()
-    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,12 +81,7 @@ private fun CourseListScreen(
             }
         }
     ) { padding ->
-        AnimatedVisibility(
-            visible = courses.isEmpty(),
-            enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300)),
-            modifier = Modifier.fillMaxSize()
-        ) {
+        if (courses.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -112,16 +94,8 @@ private fun CourseListScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-        
-        AnimatedVisibility(
-            visible = courses.isNotEmpty(),
-            enter = fadeIn(animationSpec = tween(300)) + expandVertically(animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(300)) + shrinkVertically(animationSpec = tween(300)),
-            modifier = Modifier.fillMaxSize()
-        ) {
+        } else {
             LazyColumn(
-                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
@@ -144,19 +118,6 @@ private fun CourseRow(
     course: Course,
     onClick: () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        },
-        animationSpec = tween(150),
-        label = "backgroundColor"
-    )
-    
     val supportingLines = buildList {
         course.teacher?.takeIf { it.isNotBlank() }?.let {
             add(stringResource(R.string.course_list_teacher_label, it))
@@ -171,12 +132,9 @@ private fun CourseRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(MaterialTheme.shapes.medium)
-            .background(backgroundColor)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
             .padding(horizontal = 4.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick() },
+            .clickable { onClick() },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         headlineContent = {
             Text(
