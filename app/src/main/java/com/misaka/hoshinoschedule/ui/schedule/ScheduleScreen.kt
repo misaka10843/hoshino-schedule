@@ -1,11 +1,15 @@
-﻿package com.misaka.hoshinoschedule.ui.schedule
+package com.misaka.hoshinoschedule.ui.schedule
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,7 +43,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -556,13 +559,27 @@ private fun CourseBlock(
     onClick: () -> Unit,
     isInactive: Boolean = false
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
     val backgroundColor = item.course.colorHex?.let { parseHexColorOrNull(it) }
     val (activeContainer, activeContent) = if (backgroundColor != null) {
         backgroundColor.copy(alpha = 0.92f) to Color.Black.copy(alpha = 0.87f)
     } else {
         MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
     }
-    val containerColor = if (isInactive) activeContainer.copy(alpha = 0.6f) else activeContainer
+    
+    val baseContainerColor = if (isInactive) activeContainer.copy(alpha = 0.6f) else activeContainer
+    val containerColor by animateColorAsState(
+        targetValue = if (isPressed) {
+            baseContainerColor.copy(alpha = baseContainerColor.alpha * 0.8f)
+        } else {
+            baseContainerColor
+        },
+        animationSpec = tween(150),
+        label = "containerColor"
+    )
+    
     val contentColor = if (isInactive) activeContent.copy(alpha = 0.6f) else activeContent
     Card(
         modifier = modifier,

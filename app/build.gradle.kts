@@ -74,6 +74,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.glance.appwidget)
+    implementation(libs.voyager.navigator)
+    implementation(libs.voyager.transitions)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
